@@ -12,9 +12,24 @@ namespace Apollo
 {
     public partial class Form1 : Form
     {
+
+        PACSListener mListener;
+
         public Form1()
         {
             InitializeComponent();
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            mListener = new PACSListener();
+            mListener.Start("http//localhost:9000/PACSListener/");
+
+        }
+
+        private void btnCallback_Click(object sender, EventArgs e)
+        {
+            mListener.MeasurementCallback("The index has changed");
         }
     }
 }
