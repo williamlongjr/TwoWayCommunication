@@ -22,13 +22,20 @@ namespace PACS
         private void btnStart_Click(object sender, EventArgs e)
         {
             mCommunication = new Communication();
+			mCommunication.eventCallback += mCommunication_eventCallback;
         }
+
+		void mCommunication_eventCallback(string str)
+		{
+			listBox1.Items.Add("callback:" + str);
+		}
 
         private void btnGetMeasurement_Click(object sender, EventArgs e)
         {
             string newValue;
 
             newValue = mCommunication.GetMeasurementRecords("a test UID");
+
             listBox1.Items.Add(newValue);
         }
     }

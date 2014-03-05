@@ -23,7 +23,9 @@ namespace Apollo
         private void btnStart_Click(object sender, EventArgs e)
         {
             mListener = new PACSListener();
-            mListener.Start("http//localhost:9000/PACSListener/");
+            //mListener.Start("http://localhost:8080/ApolloService/");
+			mListener.Start("net.tcp://localhost:8080/ApolloService/");
+
 
         }
 

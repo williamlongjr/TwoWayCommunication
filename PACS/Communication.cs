@@ -12,56 +12,124 @@ namespace PACS
 {
 
 
-    class Communication
-    {
-        ApolloService mApolloService;
+	class Communication
+	{
+		ApolloService mApolloService;
+		public delegate void eventHandler(string str);
+		public event eventHandler eventCallback;
 
-        public Communication()
-        {
-            mApolloService = new ApolloService("NetTcp", "http//localhost:9000/PACSListener/");
-        }
+		private ApolloCallback mApolloCallback;
 
-        public string GetMeasurementRecords(string studyUID)
-        {
-            return mApolloService.GetMeasurementRecords(studyUID);
-        }
+		public Communication()
+		{
+			EndpointAddress endpoint = new EndpointAddress("net.tcp://localhost:8080/ApolloService/DuplexMEP");
+			mApolloService = new ApolloService(new InstanceContext(mApolloCallback), GetBindingFromName("NetTcp"), endpoint);
 
-    }
+			mApolloCallback = new ApolloCallback();
+			mApolloCallback.eventCallback += mApolloCallback_eventCallback;
+		}
 
-    public class ApolloService : ClientBase<IMeasurementOperations>, IMeasurementOperations
-    {
-        public ApolloService(string bindingType, string bindingURI)
-            : base(GetBindingFromName(bindingType), new EndpointAddress(bindingURI))
-        {
-        }
+		void mApolloCallback_eventCallback(ApolloCallback a, CallBackEventArgs e)
+		{
+			eventCallback(e.Str);
+		}
 
-        private static Binding GetBindingFromName(string bindingType)
-        {
-            System.ServiceModel.Channels.Binding b = null;
+		public string GetMeasurementRecords(string studyUID)
+		{
 
-            switch (bindingType)
-            {
-                case "BasicHttp":
-                    b = new BasicHttpBinding();
-                    break;
-                case "NetNamedPipe":
-                    b = new NetNamedPipeBinding();
-                    break;
-                case "NetTcp":
-                    b = new NetTcpBinding();
-                    break;
-            }
-            return b;
-        }
+            NetTcpBinding binding;
+            binding = new NetTcpBinding();
 
-        public void NormalFunction(string str)
-        {
-            base.Channel.NormalFunction(str);
-        }
+            EndpointAddress endpoint = new EndpointAddress("net.tcp://localhost:8080/ApolloService/DuplexMEP");
 
-        public string GetMeasurementRecords(string studyUID)
-        {
-            return base.Channel.GetMeasurementRecords(studyUID);
-        }
-    }
+            MeasurementOperationsClient client = new MeasurementOperationsClient(
+                new InstanceContext(mApolloCallback), binding, endpoint);
+
+            return client.GetMeasurementRecords(studyUID);
+
+			//return mApolloService.GetMeasurementRecords(studyUID);
+		}
+
+		public void NormalFunction(string str)
+		{
+			MeasurementOperationsClient client = new MeasurementOperationsClient(
+				new InstanceContext(new ApolloCallback()));
+			client.NormalFunction(str);
+
+		}
+
+		private static Binding GetBindingFromName(string bindingType)
+		{
+			System.ServiceModel.Channels.Binding b = null;
+
+			switch (bindingType)
+			{
+				case "BasicHttp":
+					b = new BasicHttpBinding();
+					break;
+				case "NetNamedPipe":
+					b = new NetNamedPipeBinding();
+					break;
+				case "NetTcp":
+					b = new NetTcpBinding();
+					break;
+			}
+			return b;
+			//return new WSDualHttpBinding();
+		}
+
+	}
+
+	[System.Diagnostics.DebuggerStepThroughAttribute()]
+	[System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+	public class ApolloService : DuplexClientBase<IMeasurementOperations>, IMeasurementOperations
+	{
+		//public delegate void eventHandler(string str);
+		//public event eventHandler eventCallback;
+
+		public ApolloService(System.ServiceModel.InstanceContext callbackInstance) :
+			base(callbackInstance)
+		{
+		}
+
+		public ApolloService(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName) :
+			base(callbackInstance, endpointConfigurationName)
+		{
+		}
+
+		public ApolloService(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, string remoteAddress) :
+			base(callbackInstance, endpointConfigurationName, remoteAddress)
+		{
+		}
+
+		public ApolloService(System.ServiceModel.InstanceContext callbackInstance, string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) :
+			base(callbackInstance, endpointConfigurationName, remoteAddress)
+		{
+		}
+
+		public ApolloService(System.ServiceModel.InstanceContext callbackInstance, System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
+			base(callbackInstance, binding, remoteAddress)
+		{
+		}
+
+		public void NormalFunction(string str)
+		{
+			base.Channel.NormalFunction(str);
+		}
+
+		public Task NormalFunctionAsync(string str)
+		{
+			return base.Channel.NormalFunctionAsync(str);
+		}
+
+		public string GetMeasurementRecords(string studyUID)
+		{
+			return base.Channel.GetMeasurementRecords(studyUID);
+		}
+
+		public Task<string> GetMeasurementRecordsAsync(string studyUID)
+		{
+			return base.Channel.GetMeasurementRecordsAsync(studyUID);
+		}
+	}
 }
